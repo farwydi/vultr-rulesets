@@ -1,0 +1,7 @@
+# генерируемые артефакты — живут только в релизе 'latest', не в main
+vultr.json
+vultr.srs
+
+# временное
+*.tgz
+sb.tar.gz

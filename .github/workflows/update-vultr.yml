@@ -1,0 +1,44 @@
+name: Update Vultr ruleset
+
+on:
+  schedule:
+    - cron: "17 4 * * *"   # каждый день 04:17 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Generate vultr.json from RIPEstat (AS20473)
+        run: bash scripts/generate-vultr.sh vultr.json
+
+      - name: Install sing-box
+        run: |
+          VER="$(curl -fsSL https://api.github.com/repos/SagerNet/sing-box/releases/latest \
+            | grep -oE '"tag_name": *"v[^"]+"' | head -1 | grep -oE 'v[0-9.]+' | sed 's/^v//')"
+          echo "sing-box version: ${VER}"
+          curl -fsSL "https://github.com/SagerNet/sing-box/releases/download/v${VER}/sing-box-${VER}-linux-amd64.tar.gz" -o sb.tgz
+          tar xzf sb.tgz
+          sudo install -m0755 "sing-box-${VER}-linux-amd64/sing-box" /usr/local/bin/sing-box
+          rm -rf sb.tgz "sing-box-${VER}-linux-amd64"
+
+      - name: Compile vultr.srs
+        run: sing-box rule-set compile --output vultr.srs vultr.json
+
+      - name: Publish to 'latest' release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="Vultr (AS20473) sing-box ruleset — auto-updated $(date -u +%F' '%H:%M' UTC')."
+          if gh release view latest >/dev/null 2>&1; then
+            gh release edit latest --notes "${NOTES}"
+            gh release upload latest vultr.srs vultr.json --clobber
+          else
+            gh release create latest vultr.srs vultr.json \
+              --title "Latest ruleset" --notes "${NOTES}" --latest
+          fi
