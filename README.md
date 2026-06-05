@@ -3,12 +3,13 @@
 [![Update Vultr ruleset](https://github.com/farwydi/vultr-rulesets/actions/workflows/update-vultr.yml/badge.svg)](https://github.com/farwydi/vultr-rulesets/actions/workflows/update-vultr.yml)
 
 Готовый [sing-box](https://sing-box.sagernet.org/) rule-set со **всеми анонсируемыми
-подсетями Vultr/Choopa (`AS20473`)**. Удобно, когда нужно завернуть трафик к серверам
-Vultr через VPN-ноду («хоп») — например, чтобы достучаться до своего VPS, чей прямой
-выход режется.
+подсетями Vultr/Choopa (`AS20473`)**. Позволяет адресно роутить трафик к серверам Vultr —
+например, направить его через выбранный outbound (VPN-нода, прямое соединение, отдельный
+прокси) независимо от остального трафика.
 
 Список префиксов обновляется автоматически (GitHub Action, раз в сутки) из
-[RIPEstat](https://stat.ripe.net/) по `AS20473`.
+[RIPEstat](https://stat.ripe.net/) по `AS20473` и публикуется в
+[релизе `latest`](https://github.com/farwydi/vultr-rulesets/releases/latest).
 
 | Файл | Формат | Назначение |
 |------|--------|------------|
@@ -20,7 +21,7 @@ Vultr через VPN-ноду («хоп») — например, чтобы до
 1. **Rule Set** → добавить *remote* rule-set:
 
    ```
-   url:    https://raw.githubusercontent.com/farwydi/vultr-rulesets/main/vultr.srs
+   url:    https://github.com/farwydi/vultr-rulesets/releases/latest/download/vultr.srs
    format: binary
    ```
 
@@ -37,7 +38,7 @@ uci set homeproxy.vultr.label='vultr'
 uci set homeproxy.vultr.enabled='1'
 uci set homeproxy.vultr.type='remote'
 uci set homeproxy.vultr.format='binary'
-uci set homeproxy.vultr.url='https://raw.githubusercontent.com/farwydi/vultr-rulesets/main/vultr.srs'
+uci set homeproxy.vultr.url='https://github.com/farwydi/vultr-rulesets/releases/latest/download/vultr.srs'
 uci set homeproxy.vultr.outbound='proxy'
 
 uci set homeproxy.vultr_list=routing_rule
@@ -64,7 +65,7 @@ uci commit homeproxy && /etc/init.d/homeproxy reload
         "type": "remote",
         "tag": "vultr",
         "format": "binary",
-        "url": "https://raw.githubusercontent.com/farwydi/vultr-rulesets/main/vultr.srs",
+        "url": "https://github.com/farwydi/vultr-rulesets/releases/latest/download/vultr.srs",
         "download_detour": "proxy"
       }
     ]

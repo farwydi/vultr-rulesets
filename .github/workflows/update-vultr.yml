@@ -30,7 +30,7 @@ jobs:
       - name: Compile vultr.srs
         run: sing-box rule-set compile --output vultr.srs vultr.json
 
-      - name: Commit changes
+      - name: Commit source changes
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -40,4 +40,17 @@ jobs:
           else
             git commit -m "chore: update Vultr prefixes ($(date -u +%F))"
             git push
+          fi
+
+      - name: Publish to 'latest' release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="Vultr (AS20473) sing-box ruleset — auto-updated $(date -u +%F' '%H:%M' UTC')."
+          if gh release view latest >/dev/null 2>&1; then
+            gh release edit latest --notes "${NOTES}"
+            gh release upload latest vultr.srs vultr.json --clobber
+          else
+            gh release create latest vultr.srs vultr.json \
+              --title "Latest ruleset" --notes "${NOTES}" --latest
           fi
